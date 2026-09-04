@@ -576,7 +576,7 @@
 }
 
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:104px;-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{
   margin:0;
@@ -618,8 +618,8 @@ button{font:inherit;color:inherit}
 }
 .nav.scrolled{border-bottom-color:var(--line);background:color-mix(in srgb,var(--paper) 92%,transparent)}
 .nav .prog{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:0 2px 2px 0;pointer-events:none}
-.nav-in{max-width:var(--maxw);margin:0 auto;padding:12px var(--pad);display:flex;align-items:center;gap:20px}
-.brand{display:flex;align-items:center;gap:11px;font-family:var(--ff-mono);font-size:13px;letter-spacing:.02em;color:var(--ink);min-width:0}
+.nav-in{max-width:1600px;margin:0 auto;padding:12px clamp(20px,3vw,44px);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+.brand{grid-column:1;justify-self:start;display:flex;align-items:center;gap:11px;font-family:var(--ff-mono);font-size:13px;letter-spacing:.02em;color:var(--ink);min-width:0}
 .mono-mark{
   width:30px;height:30px;flex:none;display:grid;place-items:center;
   background:var(--ink);color:var(--paper);border-radius:5px;
@@ -630,19 +630,20 @@ button{font:inherit;color:inherit}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 60%,transparent);animation:pulse 2.6s infinite;flex:none}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 55%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @media (prefers-reduced-motion:reduce){.dot{animation:none}}
-.nav-links{margin-left:auto;display:flex;gap:4px;align-items:center}
+.nav-links{grid-column:2;justify-self:center;display:flex;gap:6px;align-items:center}
+.nav-right{grid-column:3;justify-self:end;display:flex;align-items:center;gap:10px}
 .nav-links a{
   font-family:var(--ff-mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-2);
   padding:7px 10px;border-radius:5px;transition:color .2s,background .2s;white-space:nowrap;
 }
 .nav-links a:hover{color:var(--ink);background:var(--surface-2)}
 .nav-links a.cur{color:var(--ink);background:var(--surface-2)}
-.nav-links a.nav-cta{
+.nav-cta{
   font-family:var(--ff-mono);font-size:12.5px;letter-spacing:.03em;
   padding:8px 15px;border-radius:5px;background:var(--accent);color:#1A1613;font-weight:600;
   border:1px solid var(--accent);transition:transform .15s,box-shadow .2s,color .2s;white-space:nowrap;
 }
-.nav-links a.nav-cta:hover{transform:translateY(-1px);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 45%,transparent)}
+.nav-cta:hover{transform:translateY(-1px);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 45%,transparent)}
 .icon-btn{
   width:34px;height:34px;flex:none;display:grid;place-items:center;cursor:pointer;
   background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--ink-2);padding:0;
@@ -669,7 +670,8 @@ button{font:inherit;color:inherit}
 .nav-drawer a.full{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);text-align:center}
 @media (max-width:1100px){.nav-links a[data-opt]{display:none}}
 @media (max-width:900px){
-  .nav-links a{display:none}
+  .nav-links{display:none}
+  .nav-cta{display:none}
   .menu-btn{display:grid}
   .brand .st{display:none}
 }
@@ -1053,6 +1055,8 @@ body.lb-lock{overflow:hidden}
       <a href="#team" data-opt="">Coaching</a>
       <a href="#proof">Proof</a>
       <a href="#story" data-opt="">About Me</a>
+    </div>
+    <div class="nav-right">
       <button class="icon-btn theme-btn" id="themeBtn" type="button" aria-label="Toggle dark mode" title="Toggle theme">
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"></path></svg>
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
@@ -1989,5 +1993,42 @@ body.lb-lock{overflow:hidden}
 })();
 </script>
 
+
+<script>
+/* In-page anchor scrolling: land each section's header just under the sticky nav.
+   Uses JS scrollTo (reliable for distant targets) instead of a CSS scroll-margin
+   trick, which broke smooth fragment scrolling to far-down sections. */
+(function(){
+  var GAP = 42;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function navH(){ var n = document.getElementById('nav'); return n ? n.offsetHeight : 64; }
+  function targetFor(hash){
+    if(hash === '#top') return 0;
+    if(hash === '#') return null;                 /* bare placeholder -> leave default */
+    var el = document.getElementById(hash.slice(1));
+    if(!el) return null;
+    var head = el.querySelector('.kick') || el.querySelector('h2') || el;
+    var y = head.getBoundingClientRect().top + window.pageYOffset;
+    return Math.max(0, Math.round(y - navH() - GAP));
+  }
+  document.addEventListener('click', function(e){
+    if(e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if(!a || a.hasAttribute('data-zoom') || a.hasAttribute('data-video')) return;
+    var href = a.getAttribute('href') || '';
+    var top = targetFor(href);
+    if(top === null) return;                       /* unknown target -> leave default */
+    e.preventDefault();
+    window.scrollTo({ top: top, behavior: reduce ? 'auto' : 'smooth' });
+    if(window.history && history.pushState) history.pushState(null, '', href);
+    var nav = document.getElementById('nav');
+    if(nav && nav.classList.contains('open')){
+      nav.classList.remove('open');
+      var mb = document.getElementById('menuBtn');
+      if(mb) mb.setAttribute('aria-expanded', 'false');
+    }
+  }, false);
+})();
+</script>
 
 </body></html>
